@@ -1,11 +1,17 @@
-let canvas = document.getElementById('canvas');
-let ctx = canvas.getContext('2d');
+// script.js
+
 let image;
-let imageWidth;
-let imageHeight;
-let originalX;
-let originalY;
-let cv;
+let originalImage;
+let canvas;
+let ctx;
+
+function initializeOpenCV() {
+    canvas = document.getElementById('canvas');
+    ctx = canvas.getContext('2d');
+    cv.onRuntimeInitialized = () => {
+        console.log('OpenCV.js ready');
+    };
+}
 
 function loadImage() {
     document.getElementById('inputImage').click();
@@ -18,24 +24,10 @@ document.getElementById('inputImage').addEventListener('change', function(event)
         reader.onload = function(e) {
             const img = new Image();
             img.src = e.target.result;
-
             img.onload = function() {
-                const canvasSize = Math.min(canvas.width, canvas.height);
-                const aspectRatio = img.width / img.height;
-                if (aspectRatio >= 1) {
-                    imageWidth = canvasSize;
-                    imageHeight = canvasSize / aspectRatio;
-                } else {
-                    imageWidth = canvasSize * aspectRatio;
-                    imageHeight = canvasSize;
-                }
-
-                originalX = (canvas.width - imageWidth) / 2;
-                originalY = (canvas.height - imageHeight) / 2;
-
-                image = img;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(image, originalX, originalY, imageWidth, imageHeight);
+                originalImage = cv.imread(img);
+                image = originalImage.clone();
+                cv.imshow(canvas, image);
             };
         };
         reader.readAsDataURL(file);
@@ -44,39 +36,25 @@ document.getElementById('inputImage').addEventListener('change', function(event)
 
 function applyTranslation() {
     if (image) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        const translationX = 50;
-        const translationY = 50;
-        ctx.translate(translationX, translationY);
-
-        ctx.drawImage(image, originalX, originalY, imageWidth, imageHeight);
+        const translationMatrix = cv.Mat.eye(2, 3, cv.CV_32F);
+        translationMatrix.data32F[2] = 50; // Translação X
+        translationMatrix.data32F[5] = 50; // Translação Y
+        cv.warpAffine(originalImage, image, translationMatrix, image.size(), cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
+        cv.imshow(canvas, image);
     }
 }
 
 function applyRotation() {
     if (image) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        const rotationAngle = 45 * (Math.PI / 180);
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-
-        ctx.translate(centerX, centerY);
-        ctx.rotate(rotationAngle);
-        ctx.drawImage(image, originalX - centerX, originalY - centerY, imageWidth, imageHeight);
-        ctx.translate(-centerX, -centerY);
+        const rotationMatrix = cv.getRotationMatrix2D(new cv.Point(image.cols / 2, image.rows / 2), 45, 1);
+        cv.warpAffine(originalImage, image, rotationMatrix, image.size(), cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
+        cv.imshow(canvas, image);
     }
 }
-
 
 function clearImage() {
-    if (image) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        image = null;
+    if (originalImage) {
+        image = originalImage.clone();
+        cv.imshow(canvas, image);
     }
-}
-
-function onOpenCvReady() {
-    cv = window.cv;
 }
