@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformação de Imagem com OpenCV.js</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Translação, Rotação</h1>
+    <p>Insira a imagem</p>
+    
+    <input type="file" id="inputImage" accept="image/*">
+    <button id="loadImageButton" onclick="loadImage()">Carregar Imagem</button>
+    <button id="translateButton" onclick="applyTranslation()">Translação</button>
+    <button id="rotateButton" onclick="applyRotation()">Rotação</button>
+    <button id="clearButton" onclick="clearImage()">Limpar Imagem</button>
+    <br>
+    <div class="canvas-container">
+        <canvas id="canvas" width="400" height="400"></canvas>
+    </div>
+    
+    <script async src="https://docs.opencv.org/master/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+    <script src="script.js"></script>
+</body>
+</html>
